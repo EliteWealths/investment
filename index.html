@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EliteWealth Capital | High-Yield Investment Platform</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .premium-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.3s ease;
+        }
+        
+        .premium-logo:hover {
+            transform: scale(1.02);
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1a3a7a, #2c5aa0);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            box-shadow: 0 4px 12px rgba(26, 58, 122, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo-icon::before {
+            content: 'EW';
+            font-size: 16px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 1px;
+        }
+        
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .logo-main {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1a3a7a;
+            letter-spacing: -0.5px;
+            line-height: 1;
+        }
+        
+        .logo-sub {
+            font-size: 10px;
+            color: #666;
+            letter-spacing: 3px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+        
+        nav a {
+            margin-right: 2rem;
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+        
+        nav a:hover {
+            color: #1a3a7a;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #1a3a7a 0%, #2c5aa0 100%);
+            color: white;
+            padding: 10rem 2rem 6rem;
+            text-align: center;
+            margin-top: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-button {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 1.2rem 3rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+        
+        .security-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            margin: 2rem auto;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+            text-align: center;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .icon-item {
+            padding: 1.5rem;
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .live-transactions-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 2rem auto;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .limited-spots {
+            background: #dc3545;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 10px;
+            margin: 1rem auto;
+            max-width: 500px;
+        }
+        
+        .contact-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem auto;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .phone-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 1rem 0;
+            color: #ffd700;
+        }
+        
+        .operator-status {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1rem 0;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-online {
+            color: #25D366;
+            font-weight: bold;
+        }
+        
+        .status-busy {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .chat-redirect {
+            background: rgba(255, 215, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .chat-btn {
+            display: inline-block;
+            background: #ffd700;
+            color: #333;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 1rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .limited-offer {
+            background: linear-gradient(45deg, #dc3545, #e74c3c);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin: 2rem auto;
+            border-radius: 15px;
+            max-width: 800px;
+            box-shadow: 0 5px 20px rgba(220, 53, 69, 0.3);
+        }
+        
+        .timer {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .timer-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            min-width: 80px;
+        }
+        
+        .timer-number {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        
+        .timer-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 5rem 2rem;
+            background: white;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1a3a7a;
+            margin-bottom: 0.5rem;
+        }
+        
+        .live-counter {
+            background: #25D366;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        section {
+            padding: 5rem 2rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #1a3a7a;
+            font-weight: 700;
+        }
+        
+        .testimonials {
+            background: #f8f9fa;
+        }
+        
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .testimonial {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border-left: 5px solid #007bff;
+            transition: transform 0.3s ease;
+        }
+        
+        .testimonial:hover {
+            transform: translateY(-5px);
+        }
+        
+        .testimonial-profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .location {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .verified-badge {
+            background: #28a745;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-top: 0.5rem;
+        }
+        
+        .payment-section {
+            background: white;
+            padding: 5rem 2rem;
+        }
+        
+        .payment-option {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+        
+        .payment-details {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .highlight {
+            color: #FF6B00;
+            font-size: 1.2em;
+        }
+        
+        .btn-primary {
+            background: #28a745;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        .security-notice {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #e7f3ff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            width: 500px;
+            max-width: 90vw;
+        }
+        
+        .bank-method {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .btn-warning {
+            background: #FF6B00;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+        }
+        
+        .investment-plans {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .plan-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        .plan-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffd700;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .plan-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        
+        .plan-features {
+            list-style: none;
+            text-align: left;
+            margin: 2rem 0;
+        }
+        
+        .plan-features li {
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+        }
+        
+        .btn-invest {
+            background: #ffd700;
+            color: #333;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            width: 100%;
+        }
+        
+        .office-section {
+            background: #f8f9fa;
+            text-align: center;
+        }
+        
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 380px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            height: 500px;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #1a3a7a, #2c5aa0);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #25D366;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .message {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #1a3a7a;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .ai-message .message-avatar {
+            background: #28a745;
+        }
+        
+        .message-content {
+            background: #f1f3f5;
+            padding: 0.75rem 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .ai-message .message-content {
+            background: #e3f2fd;
+        }
+        
+        .user-message {
+            flex-direction: row-reverse;
+        }
+        
+        .user-message .message-content {
+            background: #007bff;
+            color: white;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+        
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        #chat-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+        }
+        
+        .btn-send {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+        
+        .chat-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-upload, .btn-callback {
+            flex: 1;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            z-index: 999;
+        }
+        
+        .footer {
+            background: #1a3a7a;
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .upload-progress {
+            background: #e3f2fd;
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="#" class="premium-logo">
+                <div class="logo-icon"></div>
+                <div class="logo-text">
+                    <div class="logo-main">EliteWealth</div>
+                    <div class="logo-sub">CAPITAL GROUP</div>
+                </div>
+            </a>
+            <nav>
+                <a href="#returns">Investment Plans</a>
+                <a href="#testimonials">Success Stories</a>
+                <a href="#office">Our Office</a>
+                <a href="mailto:EliteWealth@investment.co.za">Email Us</a>
+                <a href="admin.html" style="color: #ffd700; font-weight: bold;">🔑 Staff Login</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Earn R1,500 Weekly from R1,000</h1>
+        <p>Join thousands of South Africans building generational wealth with our proven high-yield investment strategies</p>
+        <button onclick="openChat()" class="cta-button">Start Investing Now</button>
+        
+        <div class="security-badge">
+            <strong>🔐 End-to-End Encrypted</strong> • 
+            <span>Secure Connection Active</span> •
+            <span>FSCA Regulated</span>
+        </div>
+
+        <div class="icon-grid">
+            <div class="icon-item">
+                <div class="feature-icon">💎</div>
+                <div>Premium Returns</div>
+            </div>
+            <div class="icon-item">
+                <div class="feature-icon">📈</div>
+                <div>Weekly Returns</div>
+            </div>
+            <div class="icon-item">
+                <div class="feature-icon">🛡️</div>
+                <div>Secure</div>
+            </div>
+            <div class="icon-item">
+                <div class="feature-icon">⭐</div>
+                <div>Trusted</div>
+            </div>
+        </div>
+        
+        <div class="live-transactions-box">
+            <h4>💳 Live Transactions</h4>
+            <div id="live-transactions"></div>
+        </div>
+
+        <div class="limited-spots">
+            <strong>🚨 LIMITED SPOTS:</strong> 
+            Only <span id="spots-left">12</span> investment positions remaining today!
+        </div>
+        
+        <div class="live-counter">
+            <span>🔴 LIVE:</span>
+            <span id="investor-counter">5,247</span> investors online now
+        </div>
+        
+        <div class="contact-info">
+            <h3>Contact Our Investment Team</h3>
+            <div class="phone-number">+1 (888) 543-9876</div>
+            <div class="operator-status">
+                <div class="status-item">
+                    <span>Phone Lines:</span>
+                    <span class="status-busy">Busy</span>
+                </div>
+                <div class="status-item">
+                    <span>Live Chat:</span>
+                    <span class="status-online">Online</span>
+                </div>
+            </div>
+            
+            <div class="chat-redirect">
+                <p style="font-style: italic; color: #fff; margin: 0;">
+                    <strong>Pro Tip:</strong> For faster service, message us directly via live chat. 
+                    Our team is available 24/7 to help you start investing immediately.
+                </p>
+                <button onclick="openChat()" class="chat-btn">💬 Start Live Chat Now</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="limited-offer">
+        <h3>🚨 LIMITED TIME OFFER</h3>
+        <p>Get <strong>DOUBLE RETURNS</strong> on your first investment! Offer ends in:</p>
+        
+        <div class="timer">
+            <div class="timer-item">
+                <div class="timer-number" id="days">02</div>
+                <div class="timer-label">DAYS</div>
+            </div>
+            <div class="timer-item">
+                <div class="timer-number" id="hours">12</div>
+                <div class="timer-label">HOURS</div>
+            </div>
+            <div class="timer-item">
+                <div class="timer-number" id="minutes">45</div>
+                <div class="timer-label">MINUTES</div>
+            </div>
+            <div class="timer-item">
+                <div class="timer-number" id="seconds">30</div>
+                <div class="timer-label">SECONDS</div>
+            </div>
+        </div>
+        
+        <p><strong>Only 23 spots remaining at this special rate!</strong></p>
+    </div>
+
+    <section class="stats">
+        <div class="stat-item">
+            <div class="stat-number">5,247+</div>
+            <div>Active Investors</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">R28.5M+</div>
+            <div>Total Payouts</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">98.3%</div>
+            <div>Success Rate</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div>Support</div>
+        </div>
+    </section>
+
+    <section id="testimonials" class="testimonials">
+        <h2 class="section-title">💎 Success Stories</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial">
+                <div class="testimonial-profile">
+                    <div class="profile-avatar">TM</div>
+                    <div>
+                        <strong>Thabo M.</strong><br>
+                        <span class="location">Cape Town</span>
+                        <div class="verified-badge">Verified Investor</div>
+                    </div>
+                </div>
+                <p>"Started with R1,000, received R1,500 in 3 days! Now earning weekly. Life-changing!"</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                    <span>R45,000+ earned</span>
+                    <span>6 months with us</span>
+                </div>
+            </div>
+            
+            <div class="testimonial">
+                <div class="testimonial-profile">
+                    <div class="profile-avatar">SN</div>
+                    <div>
+                        <strong>Sarah N.</strong><br>
+                        <span class="location">Johannesburg</span>
+                        <div class="verified-badge">Verified Investor</div>
+                    </div>
+                </div>
+                <p>"EliteWealth helped me quit my job. Making R6,000 weekly from R4,000 investment!"</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                    <span>R128,000+ earned</span>
+                    <span>8 months with us</span>
+                </div>
+            </div>
+
+            <div class="testimonial">
+                <div class="testimonial-profile">
+                    <div class="profile-avatar">LJ</div>
+                    <div>
+                        <strong>Lerato J.</strong><br>
+                        <span class="location">Durban</span>
+                        <div class="verified-badge">Verified Investor</div>
+                    </div>
+                </div>
+                <p>"From unemployed to financial freedom! EliteWealth transformed my life completely."</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                    <span>R89,500+ earned</span>
+                    <span>5 months with us</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="payment-section">
+        <h2 class="section-title">💵 Cash Payment Options</h2>
+        
+        <div class="payment-option">
+            <h4>📱 FNB & ABSA CashSend</h4>
+            <p><strong>Only FNB and ABSA customers need our number for CashSend:</strong></p>
+            
+            <div class="payment-details">
+                <strong>FNB/ABSA CashSend Number: <span class="highlight">076 216 7562</span></strong><br>
+                <strong>Reference: ELITEWEALTH + Your Name</strong>
+            </div>
+            
+            <button onclick="showBankInstructions()" class="btn-primary">🏦 Show Bank-Specific Instructions</button>
+        </div>
+
+        <div class="security-notice">
+            <div style="font-size: 2rem;">🛡️</div>
+            <div>
+                <strong>Secure Transaction Guarantee</strong>
+                <p>All payments are protected by our escrow system. Funds released only after verification.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeBankInstructions()"></div>
+    <div class="modal" id="bankInstructions">
+        <h3>🏦 Bank-Specific Payment Methods</h3>
+        
+        <div class="bank-method">
+            <h4>📱 FNB CashSend</h4>
+            <p><strong>Our Number Required: 076 216 7562</strong></p>
+            <ol>
+                <li>Dial <strong>*120*321#</strong></li>
+                <li>Send Money → CashSend</li>
+                <li>Enter amount → <strong>076 216 7562</strong></li>
+                <li>Reference: <strong>ELITEWEALTH</strong></li>
+            </ol>
+        </div>
+        
+        <div class="bank-method">
+            <h4>📱 ABSA CashSend</h4>
+            <p><strong>Our Number Required: 076 216 7562</strong></p>
+            <ol>
+                <li>Dial <strong>*120*2272#</strong></li>
+                <li>Send Money → CashSend</li>
+                <li>Enter amount → <strong>076 216 7562</strong></li>
+                <li>Reference: <strong>ELITEWEALTH</strong></li>
+            </ol>
+        </div>
+        
+        <div class="bank-method">
+            <h4>🏦 Capitec, Standard Bank, Nedbank</h4>
+            <p><strong>NO number needed - Use your bank's voucher system</strong></p>
+            <ol>
+                <li>Open your banking app</li>
+                <li>Use your bank's voucher/CR number system</li>
+                <li>Screenshot the payment confirmation</li>
+                <li>Upload screenshot to verify payment</li>
+            </ol>
+        </div>
+        
+        <button onclick="closeBankInstructions()" class="btn-warning">✅ I Understand</button>
+    </div>
+
+    <section id="returns" class="investment-plans">
+        <h2 class="section-title">Investment Plans</h2>
+        <div class="plans-grid">
+            <div class="plan-card">
+                <div class="plan-badge">MOST POPULAR</div>
+                <h3>Starter Plan</h3>
+                <div class="plan-amount">R1,000</div>
+                <ul class="plan-features">
+                    <li>✅ Weekly Returns: R1,500</li>
+                    <li>✅ 150% ROI Weekly</li>
+                    <li>✅ 24/7 Support</li>
+                    <li>✅ Instant Activation</li>
+                </ul>
+                <button onclick="openChat()" class="btn-invest">Invest Now</button>
+            </div>
+            <div class="plan-card">
+                <div class="plan-badge">BEST VALUE</div>
+                <h3>Premium Plan</h3>
+                <div class="plan-amount">R5,000</div>
+                <ul class="plan-features">
+                    <li>✅ Weekly Returns: R7,500</li>
+                    <li>✅ 150% ROI Weekly</li>
+                    <li>✅ Priority Support</li>
+                    <li>✅ Personal Manager</li>
+                </ul>
+                <button onclick="openChat()" class="btn-invest">Invest Now</button>
+            </div>
+            <div class="plan-card">
+                <div class="plan-badge">ELITE TIER</div>
+                <h3>Elite Plan</h3>
+                <div class="plan-amount">R10,000</div>
+                <ul class="plan-features">
+                    <li>✅ Weekly Returns: R15,000</li>
+                    <li>✅ 150% ROI Weekly</li>
+                    <li>✅ Dedicated Manager</li>
+                    <li>✅ VIP Treatment</li>
+                </ul>
+                <button onclick="openChat()" class="btn-invest">Invest Now</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="office" class="office-section">
+        <h2 class="section-title">🏢 Our Cape Town Office</h2>
+        <div style="max-width: 600px; margin: 0 auto;">
+            <p><strong>EliteWealth Capital Group</strong><br>
+            The Precinct, 1 Silo Building<br>
+            V&A Waterfront, Cape Town, 8001</p>
+            <div style="background: white; padding: 1.5rem; border-radius: 10px; margin: 2rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <strong>📍 Walking distance from Nobel Square</strong><br>
+                <span style="color: #666;">Visit us Monday-Friday, 8AM-5PM</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAT WIDGET -->
+    <div id="chat-widget" class="chat-widget">
+        <div class="chat-header">
+            <h4 style="margin: 0;">💬 EliteWealth Support</h4>
+            <div class="agent-status">
+                <span class="status-dot"></span>
+                <span id="connection-status">Connecting...</span>
+            </div>
+            <button onclick="closeChat()" class="chat-close">×</button>
+        </div>
+        
+        <div id="chat-messages" class="chat-messages">
+            <div class="message ai-message">
+                <div class="message-avatar">EW</div>
+                <div class="message-content">
+                    <strong>EliteWealth Support:</strong> Welcome to EliteWealth Capital! I'm here to help you start your investment journey. How can I assist you today?
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input-area">
+            <div class="input-row">
+                <input type="text" id="chat-input" placeholder="Type your message..." onkeypress="if(event.key=='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="btn-send">Send</button>
+            </div>
+            <div class="chat-buttons">
+                <input type="file" id="file-upload" accept="image/*" style="display: none;">
+                <button onclick="uploadPaymentProof()" class="btn-upload">📎 Upload Payment Proof</button>
+                <button onclick="requestCallBack()" class="btn-callback">📞 Request Callback</button>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="openChat()" class="chat-toggle" style="animation: float 3s ease-in-out infinite;">💬</button>
+
+    <footer class="footer">
+        <p>&copy; 2024 EliteWealth Capital Group. All rights reserved. | Financial Services Provider</p>
+    </footer>
+
+    <script>
+        // ==================== REAL-TIME COMMUNICATION ====================
+        const socket = io();
+        let investorId = null;
+        let chatOpen = false;
+
+        // Initialize connection to backend
+        socket.on('connect', () => {
+            console.log('🔗 Connected to backend server');
+            document.getElementById('connection-status').textContent = 'Connected';
+            document.getElementById('connection-status').style.color = '#25D366';
+            
+            // Initialize investor when connected
+            initializeInvestor();
+        });
+
+        socket.on('disconnect', () => {
+            console.log('🔌 Disconnected from server');
+            document.getElementById('connection-status').textContent = 'Disconnected';
+            document.getElementById('connection-status').style.color = '#dc3545';
+        });
+
+        // Receive admin messages
+        socket.on('admin-message', (data) => {
+            addMessageToChat(`👨‍💼 Support: ${data.content}`, true);
+        });
+
+        // File upload notifications
+        socket.on('file-uploaded', (fileInfo) => {
+            if (fileInfo.investorId === investorId) {
+                addMessageToChat(`✅ Admin is reviewing your payment proof...`, true);
+            }
+        });
+
+        function initializeInvestor() {
+            investorId = 'inv_' + Date.now();
+            socket.emit('investor-join', { 
+                investorId: investorId,
+                userAgent: navigator.userAgent,
+                timestamp: new Date().toISOString()
+            });
+            console.log('🎯 Investor initialized:', investorId);
+        }
+
+        // ==================== AI BRAIN ====================
+        class EliteWealthAI {
+            constructor() {
+                this.responses = {
+                    greeting: [
+                        "Welcome to EliteWealth Capital! I'm here to help you start your investment journey. How can I assist you today?",
+                        "Hello! Ready to explore high-yield investment opportunities with guaranteed returns?",
+                        "Hi there! Thanks for reaching out to EliteWealth. Let's get you started earning R1,500 weekly!"
+                    ],
+                    payment: [
+                        "Perfect! Please upload your payment proof screenshot. Once verified, your account activates within 2 hours!",
+                        "Excellent! We need your payment confirmation. Upload the screenshot and returns start immediately!",
+                        "Payment received! Upload your proof and your R1,500 weekly returns will be activated."
+                    ],
+                    investment: [
+                        "Our Starter Plan requires R1,000 and pays R1,500 weekly. That's 150% ROI every week!",
+                        "We offer three plans with 150% weekly returns. Many start with R1,000 to test, then upgrade!",
+                        "The returns are guaranteed through our AI trading algorithms. 98.3% success rate since 2022."
+                    ],
+                    urgency: [
+                        "Quick note: Only 8 investment spots remaining at current rates. Secure your position now!",
+                        "Good timing! Our double returns offer ends soon. You could get R3,000 back from R1,000!",
+                        "We're experiencing high demand - spots are filling fast! Don't miss these rates."
+                    ]
+                };
+            }
+
+            generateResponse(message) {
+                const msg = message.toLowerCase();
+                
+                if (msg.includes('paid') || msg.includes('sent') || msg.includes('payment') || msg.includes('screenshot')) {
+                    return this.getResponse('payment') + " " + this.getResponse('urgency');
+                }
+                
+                if (msg.includes('invest') || msg.includes('plan') || msg.includes('return') || msg.includes('roi')) {
+                    return this.getResponse('investment') + " " + this.getResponse('urgency');
+                }
+                
+                if (msg.includes('hi') || msg.includes('hello') || msg.includes('start')) {
+                    return this.getResponse('greeting') + " " + this.getResponse('urgency');
+                }
+                
+                return "Thank you for your message! I'm here to help you with your investment. Could you tell me more about what you need?";
+            }
+
+            getResponse(type) {
+                const responses = this.responses[type];
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+        }
+
+        const ai = new EliteWealthAI();
+
+        // ==================== CHAT FUNCTIONS ====================
+        function openChat() {
+            document.getElementById('chat-widget').style.display = 'flex';
+            chatOpen = true;
+            document.getElementById('chat-input').focus();
+            
+            if (!investorId) {
+                initializeInvestor();
+            }
+        }
+
+        function closeChat() {
+            document.getElementById('chat-widget').style.display = 'none';
+            chatOpen = false;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessageToChat(message, false);
+                
+                // Send to backend
+                if (socket.connected && investorId) {
+                    socket.emit('investor-message', {
+                        message: message,
+                        investorId: investorId
+                    });
+                }
+                
+                input.value = '';
+                
+                // AI response
+                setTimeout(() => {
+                    const response = ai.generateResponse(message);
+                    addMessageToChat(response, true);
+                    
+                    // Also send AI response to backend
+                    if (socket.connected && investorId) {
+                        socket.emit('investor-message', {
+                            message: response,
+                            investorId: investorId,
+                            isAI: true
+                        });
+                    }
+                }, 1000);
+            }
+        }
+
+        function addMessageToChat(text, isAI) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            
+            if (isAI) {
+                messageDiv.className = 'message ai-message';
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">EW</div>
+                    <div class="message-content">
+                        <strong>EliteWealth Support:</strong> ${text}
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                `;
+            } else {
+                messageDiv.className = 'message user-message';
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">YO</div>
+                    <div class="message-content">
+                        <strong>You:</strong> ${text}
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                `;
+            }
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // ==================== REAL FILE UPLOAD ====================
+        function uploadPaymentProof() {
+            const fileInput = document.getElementById('file-upload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a payment proof screenshot first');
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file (JPG, PNG, GIF)');
+                return;
+            }
+
+            // Show upload progress
+            addMessageToChat(`📤 Uploading ${file.name}...`, false);
+            
+            if (socket.connected) {
+                socket.emit('file-upload-start', { 
+                    filename: file.name, 
+                    investorId: investorId 
+                });
+            }
+
+            // REAL UPLOAD TO SERVER
+            const formData = new FormData();
+            formData.append('paymentProof', file);
+            formData.append('investorId', investorId);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addMessageToChat(`✅ ${file.name} uploaded successfully! File ID: ${data.file.id}`, false);
+                    
+                    // AI verification response
+                    setTimeout(() => {
+                        addMessageToChat(`🎯 Payment proof received! Our team is verifying the transaction...`, true);
+                        
+                        setTimeout(() => {
+                            addMessageToChat(`💰 VERIFICATION COMPLETE! Your account is activated. Weekly returns of R1,500 begin now!`, true);
+                        }, 3000);
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                addMessageToChat(`❌ Upload failed: ${error.message}`, false);
+            });
+        }
+
+        function requestCallBack() {
+            addMessageToChat("I'd like to request a callback from an investment specialist.", false);
+            setTimeout(() => {
+                addMessageToChat("Absolutely! I've scheduled a callback for you within 30 minutes. Our specialist will discuss your investment goals.", true);
+            }, 1000);
+        }
+
+        // File upload trigger
+        document.getElementById('file-upload').addEventListener('change', function(e) {
+            if (this.files[0]) {
+                uploadPaymentProof();
+            }
+        });
+
+        // ==================== BANK MODAL ====================
+        function showBankInstructions() {
+            document.getElementById('bankInstructions').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+        }
+
+        function closeBankInstructions() {
+            document.getElementById('bankInstructions').style.display = 'none';
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        // ==================== LIVE UPDATES ====================
+        let investorCount = 5247;
+        setInterval(() => {
+            investorCount += Math.floor(Math.random() * 3);
+            document.getElementById('investor-counter').textContent = investorCount.toLocaleString();
+        }, 5000);
+
+        function updateTimer() {
+            const days = document.getElementById('days');
+            const hours = document.getElementById('hours');
+            const minutes = document.getElementById('minutes');
+            const seconds = document.getElementById('seconds');
+            
+            let sec = parseInt(seconds.textContent);
+            if (sec > 0) sec--;
+            else {
+                sec = 59;
+                let min = parseInt(minutes.textContent);
+                if (min > 0) min--;
+                else {
+                    min = 59;
+                    let hrs = parseInt(hours.textContent);
+                    if (hrs > 0) hrs--;
+                    else {
+                        hrs = 23;
+                        let dys = parseInt(days.textContent);
+                        if (dys > 0) dys--;
+                        days.textContent = dys.toString().padStart(2, '0');
+                    }
+                    hours.textContent = hrs.toString().padStart(2, '0');
+                }
+                minutes.textContent = min.toString().padStart(2, '0');
+            }
+            seconds.textContent = sec.toString().padStart(2, '0');
+        }
+        setInterval(updateTimer, 1000);
+
+        const transactions = [
+            "Thabo M. invested R5,000 • 2 min ago",
+            "Sarah K. received R7,500 payout • 5 min ago", 
+            "Mike T. upgraded to Elite Plan • 8 min ago"
+        ];
+
+        function showLiveTransactions() {
+            const randomTx = transactions[Math.floor(Math.random() * transactions.length)];
+            document.getElementById('live-transactions').innerHTML = `🟢 ${randomTx}`;
+        }
+        setInterval(showLiveTransactions, 10000);
+        showLiveTransactions();
+
+        let spots = 12;
+        setInterval(() => {
+            if (spots > 1 && Math.random() > 0.7) {
+                spots--;
+                document.getElementById('spots-left').textContent = spots;
+            }
+        }, 30000);
+
+        // Prevent right-click
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔥 EliteWealth System Initialized');
+        });
+    </script>
+</body>
+  </html>
