@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - EliteWealth Capital</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0f1419;
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .admin-header {
+            background: #1a3a7a;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+        
+        .admin-nav {
+            display; flex;
+            gap: 2rem;
+        }
+        
+        .admin-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        
+        .admin-nav a:hover, .admin-nav a.active {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .admin-content {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: #1e2b3a;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            height: 70vh;
+        }
+        
+        .panel {
+            background: #1e2b3a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #2d3b4d;
+        }
+        
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .chats-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .chat-item {
+            background: #2d3b4d;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border-left: 3px solid #25D366;
+        }
+        
+        .chat-item:hover {
+            background: #3d4b5d;
+        }
+        
+        .chat-item.active {
+            background: #1a3a7a;
+            border-left-color: #ffd700;
+        }
+        
+        .chat-preview {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-meta {
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+        
+        .chat-badge {
+            background: #25D366;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        
+        .chat-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            background: #0f1419;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid;
+        }
+        
+        .investor-message {
+            background: #2d3b4d;
+            border-left-color: #25D366;
+        }
+        
+        .admin-message {
+            background: #1a3a7a;
+            border-left-color: #ffd700;
+        }
+        
+        .ai-message {
+            background: #1e2b3a;
+            border-left-color: #28a745;
+        }
+        
+        .file-message {
+            background: #2d3b4d;
+            border-left-color: #dc3545;
+        }
+        
+        .message-sender {
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+        
+        .message-content {
+            font-size: 0.9rem;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            color: #ccc;
+            float: right;
+        }
+        
+        .admin-input-area {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .admin-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #2d3b4d;
+            border-radius: 5px;
+            background: #1e2b3a;
+            color: white;
+        }
+        
+        .btn-send {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .files-panel {
+            background: #1e2b3a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .files-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        
+        .file-item {
+            background: #2d3b4d;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .file-meta {
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-admin {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .btn-admin.view {
+            background: #28a745;
+        }
+        
+        .btn-admin.download {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #25D366;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 10000;
+            display: none;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .tab-flasher {
+            animation: tabFlash 1s infinite;
+        }
+        
+        @keyframes tabFlash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-connected {
+            background: #25D366;
+        }
+        
+        .status-disconnected {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <div>
+            <h1>🔧 EliteWealth Admin Panel</h1>
+            <div class="connection-status">
+                <div class="status-dot status-connected" id="status-dot"></div>
+                <span id="connection-status">Connected</span>
+            </div>
+        </div>
+        <div class="admin-nav">
+            <a href="index.html" target="_blank">View Site</a>
+            <a href="#" class="active">Live Monitor</a>
+            <a href="#">Settings</a>
+        </div>
+    </div>
+
+    <div class="admin-content">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-investors">0</div>
+                <div class="stat-label">Active Investors</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-files">0</div>
+                <div class="stat-label">Files Uploaded</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="online-investors">0</div>
+                <div class="stat-label">Online Now</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-messages">0</div>
+                <div class="stat-label">Messages Today</div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">💬 Active Investors</div>
+                    <div class="chat-badge" id="investors-count">0</div>
+                </div>
+                <div class="chats-list" id="investors-list">
+                    <!-- Investors will appear here -->
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">📝 Chat Monitor - <span id="selected-investor">Select an investor</span></div>
+                    <div class="chat-badge">Live</div>
+                </div>
+                <div class="chat-view">
+                    <div class="chat-messages" id="monitor-messages">
+                        <div class="ai-message">
+                            <div class="message-sender">System <span class="message-time">Ready</span></div>
+                            <div class="message-content">Select an investor to view their conversation</div>
+                        </div>
+                    </div>
+                    <div class="admin-input-area">
+                        <input type="text" id="admin-message-input" class="admin-input" placeholder="Type message as support agent..." disabled>
+                        <button onclick="sendAdminMessage()" class="btn-send" disabled id="send-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="files-panel">
+            <div class="panel-header">
+                <div class="panel-title">📸 Payment Proofs Uploaded</div>
+                <button class="btn-admin" onclick="loadFiles()">🔄 Refresh Files</button>
+            </div>
+            <div class="files-list" id="files-list">
+                <!-- Files will appear here -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-admin" onclick="simulateNewInvestor()">👤 Simulate Investor</button>
+            <button class="btn-admin" onclick="simulateFileUpload()">📎 Simulate Upload</button>
+            <button class="btn-admin" onclick="clearAllData()">🗑️ Clear All</button>
+            <button class="btn-admin download" onclick="exportData()">📥 Export Data</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <strong id="notification-title">Notification</strong>
+        <div id="notification-message">Message content</div>
+    </div>
+
+    <script>
+        // ==================== REAL-TIME ADMIN SYSTEM ====================
+        const socket = io();
+        let selectedInvestorId = null;
+        let investors = new Map();
+        let uploadedFiles = new Map();
+
+        // Socket event handlers
+        socket.on('connect', () => {
+            console.log('🔗 Admin panel connected to server');
+            updateConnectionStatus(true);
+            loadInitialData();
+        });
+
+        socket.on('disconnect', () => {
+            console.log('🔌 Admin panel disconnected');
+            updateConnectionStatus(false);
+        });
+
+        socket.on('new-investor', (data) => {
+            showNotification('🎯 New Investor', `Investor ${data.investorId} joined the system`);
+            addInvestor(data);
+            flashTabTitle('🔔 NEW INVESTOR!');
+        });
+
+        socket.on('new-message', (data) => {
+            if (data.investorId === selectedInvestorId) {
+                addMessageToMonitor(data);
+            }
+            updateInvestorLastMessage(data.investorId, data.content);
+        });
+
+        socket.on('file-upload-start', (data) => {
+            showNotification('📤 File Upload', `Investor ${data.investorId} uploading: ${data.filename}`);
+        });
+
+        socket.on('file-uploaded', (fileInfo) => {
+            showNotification('📸 Payment Proof', `New file uploaded by ${fileInfo.investorId}`);
+            addFileToList(fileInfo);
+            if (fileInfo.investorId === selectedInvestorId) {
+                addMessageToMonitor({
+                    type: 'file',
+                    content: `Uploaded payment proof: ${fileInfo.originalName}`,
+                    timestamp: fileInfo.uploadTime,
+                    investorId: fileInfo.investorId
+                });
+            }
+        });
+
+        socket.on('investor-left', (data) => {
+            showNotification('🚪 Investor Left', `Investor ${data.investorId} disconnected`);
+            removeInvestor(data.investorId);
+        });
+
+        // ==================== ADMIN FUNCTIONS ====================
+        function updateConnectionStatus(connected) {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('connection-status');
+            
+            if (connected) {
+                statusDot.className = 'status-dot status-connected';
+                statusText.textContent = 'Connected';
+                statusText.style.color = '#25D366';
+            } else {
+                statusDot.className = 'status-dot status-disconnected';
+                statusText.textContent = 'Disconnected';
+                statusText.style.color = '#dc3545';
+            }
+        }
+
+        function showNotification(title, message) {
+            const notification = document.getElementById('notification');
+            const notifTitle = document.getElementById('notification-title');
+            const notifMessage = document.getElementById('notification-message');
+            
+            notifTitle.textContent = title;
+            notifMessage.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+        function flashTabTitle(message) {
+            const originalTitle = document.title;
+            let flashCount = 0;
+            
+            const flash = setInterval(() => {
+                document.title = document.title === originalTitle ? message : originalTitle;
+                flashCount++;
+                
+                if (flashCount >= 10) {
+                    clearInterval(flash);
+                    document.title = originalTitle;
+                }
+            }, 500);
+        }
+
+        function addInvestor(investorData) {
+            investors.set(investorData.investorId, investorData);
+            updateInvestorsList();
+            updateStats();
+        }
+
+        function removeInvestor(investorId) {
+            investors.delete(investorId);
+            updateInvestorsList();
+            updateStats();
+            
+            if (investorId === selectedInvestorId) {
+                selectInvestor(null);
+            }
+        }
+
+        function updateInvestorsList() {
+            const container = document.getElementById('investors-list');
+            container.innerHTML = '';
+            
+            investors.forEach((investor, investorId) => {
+                const investorEl = document.createElement('div');
+                investorEl.className = `chat-item ${investorId === selectedInvestorId ? 'active' : ''}`;
+                investorEl.onclick = () => selectInvestor(investorId);
+                
+                investorEl.innerHTML = `
+                    <div class="chat-preview">
+                        <div>
+                            <strong>Investor ${investorId.split('_')[1]}</strong>
+                            <div class="chat-meta">
+                                Joined: ${investor.joinTime} • IP: ${investor.ip}
+                            </div>
+                        </div>
+                        <div class="chat-badge">Active</div>
+                    </div>
+                `;
+                
+                container.appendChild(investorEl);
+            });
+            
+            document.getElementById('investors-count').textContent = investors.size;
+        }
+
+        function selectInvestor(investorId) {
+            selectedInvestorId = investorId;
+            document.getElementById('selected-investor').textContent = investorId ? `Investor ${investorId.split('_')[1]}` : 'Select an investor';
+            
+            // Enable/disable message input
+            const messageInput = document.getElementById('admin-message-input');
+            const sendBtn = document.getElementById('send-btn');
+            messageInput.disabled = !investorId;
+            sendBtn.disabled = !investorId;
+            
+            // Update UI
+            document.querySelectorAll('.chat-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            if (investorId) {
+                document.querySelector(`.chat-item[onclick="selectInvestor('${investorId}')"]`)?.classList.add('active');
+                loadChatHistory(investorId);
+            } else {
+                document.getElementById('monitor-messages').innerHTML = `
+                    <div class="ai-message">
+                        <div class="message-sender">System <span class="message-time">Ready</span></div>
+                        <div class="message-content">Select an investor to view their conversation</div>
+                    </div>
+                `;
+            }
+        }
+
+        function loadChatHistory(investorId) {
+            fetch(`/api/chat/${investorId}`)
+                .then(response => response.json())
+                .then(messages => {
+                    const container = document.getElementById('monitor-messages');
+                    container.innerHTML = '';
+                    
+                    messages.forEach(message => {
+                        addMessageToMonitor(message);
+                    });
+                });
+        }
+
+        function addMessageToMonitor(message) {
+            const container = document.getElementById('monitor-messages');
+            const messageEl = document.createElement('div');
+            
+            let messageClass = 'message ';
+            let sender = '';
+            
+            switch (message.type) {
+                case 'investor':
+                    messageClass += 'investor-message';
+                    sender = 'Investor';
+                    break;
+                case 'admin':
+                    messageClass += 'admin-message';
+                    sender = 'You';
+                    break;
+                case 'file':
+                    messageClass += 'file-message';
+                    sender = '📎 File Upload';
+                    break;
+                default:
+                    messageClass += 'ai-message';
+                    sender = 'AI System';
+            }
+            
+            messageEl.className = messageClass;
+            messageEl.innerHTML = `
+                <div class="message-sender">
+                    ${sender} 
+                    <span class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div class="message-content">${message.content}</div>
+            `;
+            
+            container.appendChild(messageEl);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendAdminMessage() {
+            const input = document.getElementById('admin-message-input');
+            const message = input.value.trim();
+            
+            if (message && selectedInvestorId) {
+                socket.emit('admin-message', {
+                    investorId: selectedInvestorId,
+                    message: message
+                });
+                
+                addMessageToMonitor({
+                    type: 'admin',
+                    content: message,
+                    timestamp: new Date(),
+                    investorId: selectedInvestorId
+                });
+                
+                input.value = '';
+            }
+        }
+
+        function updateInvestorLastMessage(investorId, message) {
+            // Update the investor list with last message preview
+            const investorEl = document.querySelector(`.chat-item[onclick="selectInvestor('${investorId}')"]`);
+            if (investorEl) {
+                const metaEl = investorEl.querySelector('.chat-meta');
+                if (metaEl) {
+                    metaEl.textContent = `Last: ${message.substring(0, 30)}...`;
+                }
+            }
+        }
+
+        // ==================== FILE MANAGEMENT ====================
+        function loadFiles() {
+            fetch('/api/uploads')
+                .then(response => response.json())
+                .then(files => {
+                    uploadedFiles.clear();
+                    files.forEach(file => uploadedFiles.set(file.id, file));
+                    updateFilesList();
+                    updateStats();
+                });
+        }
+
+        function addFileToList(fileInfo) {
+            uploadedFiles.set(fileInfo.id, fileInfo);
+            updateFilesList();
+            updateStats();
+        }
+
+        function updateFilesList() {
+            const container = document.getElementById('files-list');
+            container.innerHTML = '';
+            
+            if (uploadedFiles.size === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #ccc; padding: 2rem;">No files uploaded yet</div>';
+                return;
+            }
+            
+            uploadedFiles.forEach(file => {
+                const fileEl = document.createElement('div');
+                fileEl.className = 'file-item';
+                
+                fileEl.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${file.originalName}</div>
+                        <div class="file-meta">
+                            📁 ${file.filename} • 
+                            💾 ${formatFileSize(file.size)} • 
+                            ⏰ ${new Date(file.uploadTime).toLocaleString()} • 
+                            👤 ${file.investorId}
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-admin view" onclick="viewFile('${file.filename}')">👁️ View</button>
+                        <button class="btn-admin download" onclick="downloadFile('${file.filename}')">📥 Download</button>
+                    </div>
+                `;
+                
+                container.appendChild(fileEl);
+            });
+        }
+
+        function viewFile(filename) {
+            window.open(`/uploads/${filename}`, '_blank');
+        }
+
+        function downloadFile(filename) {
+            const link = document.createElement('a');
+            link.href = `/uploads/${filename}`;
+            link.download = filename;
+            link.click();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // ==================== STATISTICS ====================
+        function updateStats() {
+            document.getElementById('total-investors').textContent = investors.size;
+            document.getElementById('total-files').textContent = uploadedFiles.size;
+            document.getElementById('online-investors').textContent = Array.from(investors.values()).filter(inv => inv.status === 'active').length;
+            document.getElementById('total-messages').textContent = Array.from(investors.values()).reduce((total, inv) => total + (inv.messageCount || 0), 0);
+        }
+
+        // ==================== CONTROL FUNCTIONS ====================
+        function simulateNewInvestor() {
+            const investorId = 'inv_sim_' + Date.now();
+            const simulatedInvestor = {
+                investorId: investorId,
+                joinTime: new Date().toLocaleString(),
+                ip: '192.168.1.' + Math.floor(Math.random() * 255)
+            };
+            
+            socket.emit('new-investor', simulatedInvestor);
+            
+            // Simulate a message
+            setTimeout(() => {
+                socket.emit('new-message', {
+                    investorId: investorId,
+                    content: "Hi, I want to invest R1,000. How do I start?",
+                    type: 'investor',
+                    timestamp: new Date()
+                });
+            }, 1000);
+        }
+
+        function simulateFileUpload() {
+            if (!selectedInvestorId) {
+                alert('Please select an investor first');
+                return;
+            }
+            
+            const simulatedFile = {
+                id: 'file_sim_' + Date.now(),
+                originalName: 'payment_proof_simulated.jpg',
+                filename: 'simulated-file.jpg',
+                size: 1024 * 512, // 512KB
+                uploadTime: new Date(),
+                investorId: selectedInvestorId
+            };
+            
+            socket.emit('file-uploaded', simulatedFile);
+        }
+
+        function clearAllData() {
+            if (confirm('Clear all data? This cannot be undone.')) {
+                investors.clear();
+                uploadedFiles.clear();
+                updateInvestorsList();
+                updateFilesList();
+                updateStats();
+                selectInvestor(null);
+            }
+        }
+
+        function exportData() {
+            const data = {
+                investors: Array.from(investors.values()),
+                files: Array.from(uploadedFiles.values()),
+                exportTime: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `elitewealth-data-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ==================== INITIALIZATION ====================
+        function loadInitialData() {
+            fetch('/api/investors')
+                .then(response => response.json())
+                .then(investorsData => {
+                    investorsData.forEach(inv => investors.set(inv.id, inv));
+                    updateInvestorsList();
+                });
+            
+            loadFiles();
+            
+            // Load stats
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(stats => {
+                    document.getElementById('total-investors').textContent = stats.totalInvestors;
+                    document.getElementById('online-investors').textContent = stats.onlineInvestors;
+                });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Admin Panel Initialized');
+            console.log('👁️  Real-time monitoring active');
+            
+            // Auto-refresh files every 10 seconds
+            setInterval(loadFiles, 10000);
+            
+            // Enable Enter key for sending messages
+            document.getElementById('admin-message-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendAdminMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
